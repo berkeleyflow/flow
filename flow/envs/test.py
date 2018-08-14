@@ -29,17 +29,20 @@ class TestEnv(Env):
 
     @property
     def action_space(self):
-        return Box(low=0, high=0, shape=0, dtype=np.float32)
+        return Box(low=0, high=0, shape=(0,), dtype=np.float32)
 
     @property
     def observation_space(self):
-        return Box(low=0, high=0, shape=0, dtype=np.float32)
+        return Box(low=0, high=0, shape=(0,), dtype=np.float32)
 
     def _apply_rl_actions(self, rl_actions):
         return
 
     def compute_reward(self, state, rl_actions, **kwargs):
-        return 0
+        if "reward_fn" in self.env_params.additional_params:
+            return self.env_params.additional_params["reward_fn"](self)
+        else:
+            return 0
 
     def get_state(self, **kwargs):
         return np.array([])

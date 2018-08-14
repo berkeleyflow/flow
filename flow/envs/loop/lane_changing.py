@@ -127,8 +127,6 @@ class LaneChangeAccelEnv(Env):
         direction[non_lane_changing_veh] = \
             np.array([0] * sum(non_lane_changing_veh))
 
-        print(direction)
-
         self.apply_acceleration(sorted_rl_ids, acc=acceleration)
         self.apply_lane_change(sorted_rl_ids, direction=direction)
 

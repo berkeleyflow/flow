@@ -437,7 +437,7 @@ class Vehicles:
         self.set_absolute_position(veh_id, 0)
 
         # set the "last_lc" parameter of the vehicle
-        self.set_state(veh_id, "last_lc", env.time_counter)
+        self.set_state(veh_id, "last_lc", -float("inf"))
 
         # specify the initial speed
         self.__vehicles[veh_id]["initial_speed"] = \

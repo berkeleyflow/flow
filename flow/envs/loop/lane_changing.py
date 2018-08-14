@@ -127,6 +127,8 @@ class LaneChangeAccelEnv(Env):
         direction[non_lane_changing_veh] = \
             np.array([0] * sum(non_lane_changing_veh))
 
+        print(direction)
+
         self.apply_acceleration(sorted_rl_ids, acc=acceleration)
         self.apply_lane_change(sorted_rl_ids, direction=direction)
 
@@ -210,14 +212,13 @@ class LaneChangeAccelPOEnv(LaneChangeAccelEnv):
                     lane_headways[j] /= max_length
                     vel_in_front[j] = self.vehicles.get_speed(lane_leader) \
                         / max_speed
+                    self.visible.extend([lane_leader])
             for j, lane_follower in enumerate(lane_followers):
                 if lane_follower != '':
                     lane_headways[j] /= max_length
                     vel_behind[j] = self.vehicles.get_speed(lane_follower) \
                         / max_speed
-
-            self.visible.extend(lane_leaders)
-            self.visible.extend(lane_followers)
+                    self.visible.extend([lane_follower])
 
             # add the headways, tailways, and speed for all lane leaders
             # and followers

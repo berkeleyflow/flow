@@ -129,6 +129,13 @@ class Env(gym.Env, Serializable):
         self.sorted_ids = deepcopy(self.vehicles.get_ids())
         self.sorted_extra_data = None
 
+        # keeps track of the last time a lane change occurred before the
+        # current time step. This is meant to ensure that lane changes by RL
+        # vehicles do not occur in quick succession.
+        self.prev_last_lc = dict()
+        for veh_id in self.vehicles.get_ids():
+            self.prev_last_lc[veh_id] = -float("inf")
+
         self.start_sumo()
         self.setup_initial_state()
 
@@ -578,7 +585,7 @@ class Env(gym.Env, Serializable):
         # update the colors of vehicles
         self.update_vehicle_colors()
 
-        self.prev_last_lc = dict()
+        self.prev_last_lc.clear()
         for veh_id in self.vehicles.get_ids():
             # re-initialize the vehicles class with the states of the vehicles
             # at the start of a rollout

@@ -124,6 +124,11 @@ class Env(gym.Env, Serializable):
         if not hasattr(self.env_params, "evaluate"):
             self.env_params.evaluate = False
 
+        # list of sorted ids (defaults to regular list of vehicle ids if the
+        # "sort_vehicles" attribute in env_params is set to False)
+        self.sorted_ids = deepcopy(self.vehicles.get_ids())
+        self.sorted_extra_data = None
+
         self.start_sumo()
         self.setup_initial_state()
 
@@ -521,8 +526,7 @@ class Env(gym.Env, Serializable):
 
             self.initial_state = deepcopy(initial_state)
 
-        # # clear all vehicles from the network and the vehicles class
-
+        # clear all vehicles from the network and the vehicles class
         for veh_id in self.traci_connection.vehicle.getIDList():
             try:
                 self.traci_connection.vehicle.remove(veh_id)
@@ -532,8 +536,8 @@ class Env(gym.Env, Serializable):
                 print("Error during start: {}".format(traceback.format_exc()))
                 pass
 
-        # clear all vehicles from the network and the vehicles class
-        # FIXME (ev, ak) this is weird and shouldn't be necessary
+        # clear collided vehicles that were not deleted in the first round of
+        # removals (this may be a sumo bug and seems to happen stochastically)
         for veh_id in list(self.vehicles.get_ids()):
             self.vehicles.remove(veh_id)
             try:

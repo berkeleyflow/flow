@@ -2,6 +2,8 @@ from flow.envs.base_env import Env
 from gym.spaces.box import Box
 import numpy as np
 import collections
+import random
+import traci.constants as tc
 
 ADDITIONAL_ENV_PARAMS = {
     # maximum acceleration for autonomous vehicles, in m/s^2
@@ -13,15 +15,19 @@ ADDITIONAL_ENV_PARAMS = {
     "accel_delay": 0,
     # standard deviation of the gaussian exogenous noise added to the
     # acceleration actions, in m/s^2
-    "accel_noise": 0,
+    "accel_noise": 1,
     # standard deviation of the gaussian exogenous noise added to the speed
     # observations, in m/s
-    "speed_noise": 0,
+    "speed_noise": 1,
     # standard deviation of the gaussian exogenous noise added to the position
     # observations, in meters
     "position_noise": 0,
     # desired time headway for the autonomous vehicles, in seconds
     "target_headway": 3,
+    # probability of a vehicle cutting in at any time step
+    "cut_in_prob": 0.01,
+    # probability of a cut-in leaving at any time step
+    "cut_out_prob": 0.01,
 }
 
 
@@ -74,6 +80,8 @@ class PlatooningEnv(Env):
                 raise KeyError('Environment parameter "{}" not supplied'.
                                format(p))
 
+        super().__init__(env_params, sumo_params, scenario)
+
         # initialize an empty acceleration queue
         self.accel_queue = collections.deque()
 
@@ -81,7 +89,19 @@ class PlatooningEnv(Env):
         self.delay_size = int(self.env_params.additional_params["accel_delay"]
                               / self.sim_step)
 
-        super().__init__(env_params, sumo_params, scenario)
+        # number of cut-in vehicles during the current rollout
+        self.num_cut_in = 0
+
+        # list of names for vehicle that are currently cut-in in front of an RL
+        # vehicle. If None, then there is no cut-in vehicle
+        self.cut_in = [None for _ in range(self.vehicles.num_rl_vehicles)]
+
+        # vehicle cut-in probability. If a vehicle has already cut in, no new
+        # vehicles are assumed to also cut-in in this environment.
+        self.cut_in_prob = self.env_params.additional_params["cut_in_prob"]
+
+        # vehicle cut-out probability. Only applies to cut-in vehicles
+        self.cut_out_prob = self.env_params.additional_params["cut_out_prob"]
 
     @property
     def action_space(self):
@@ -113,12 +133,66 @@ class PlatooningEnv(Env):
         self.apply_acceleration(self.vehicles.get_rl_ids(), actions)
 
     def additional_command(self):
-        # add noise to the position and velocity observation of all vehicles in
-        # accordance with the noise parameters
-        if self.env_params.additional_params["speed_noise"] > 0:
-            pass
-        if self.env_params.additional_params["position_noise"] > 0:
-            pass
+        # add noise to the position, headway, and velocity observations of all
+        # vehicles in accordance with the noise parameters
+        speed_dev = self.env_params.additional_params["speed_noise"]
+        pos_dev = self.env_params.additional_params["position_noise"]
+        for veh_id in self.vehicles.get_ids():
+            self.vehicles.test_set_speed(
+                veh_id=veh_id,
+                speed=self.vehicles.get_speed(veh_id)
+                + np.random.normal(0, speed_dev))
+            self.vehicles.test_set_position(
+                veh_id=veh_id,
+                position=self.vehicles.get_position(veh_id)
+                + np.random.normal(0, pos_dev))
+            self.vehicles.set_headway(
+                veh_id=veh_id,
+                headway=self.vehicles.get_headway(veh_id)
+                + np.random.normal(0, pos_dev))
+
+        # list of sorted RL vehicles (this is used in the next step)
+        sorted_rl_ids = [veh_id for veh_id in self.sorted_ids
+                         if veh_id in self.vehicles.get_rl_ids()]
+
+        # simulate entering/exiting vehicles
+        for i in range(self.vehicles.num_rl_vehicles):
+            if self.cut_in[i] is None:
+                # check a vehicle is cutting-in in this time step
+                if random.uniform(0, 1) < self.cut_out_prob:
+                    # name of the entering vehicle
+                    self.cut_in[i] = "cut_in{}".format(self.num_cut_in)
+
+                    # the entering vehicle is placed halfway between the
+                    # lagging vehicle and the one ahead of it
+                    lag_veh = sorted_rl_ids[i]
+                    new_pos = (self.get_x_by_id(lag_veh) +
+                               self.vehicles.get_headway(lag_veh) / 2) \
+                        % self.scenario.length
+                    edge, rel_pos = self.scenario.get_edge(new_pos)
+
+                    self.traci_connection.vehicle.add(
+                        "cut_in{}".format(self.num_cut_in),
+                        "route{}".format(edge),
+                        typeID="cut_in",
+                        lane=self.vehicles.get_lane(lag_veh),
+                        pos=rel_pos,
+                        speed=tc.DEPARTFLAG_SPEED_RANDOM,
+                    )
+
+                    self.num_cut_in += 1
+
+            else:
+                # check if the cut-in vehicle is leaving in this time step
+                if random.uniform(0, 1) < self.cut_out_prob:
+                    veh_id = self.cut_in[i]
+                    self.traci_connection.vehicle.remove(veh_id)
+                    try:
+                        self.traci_connection.vehicle.unsubscribe(veh_id)
+                        self.vehicles.remove(veh_id)
+                    except:
+                        pass
+                    self.cut_in[i] = None
 
     def compute_reward(self, state, rl_actions, **kwargs):
         headway = [self.vehicles.get_headway(veh_id)
@@ -140,6 +214,9 @@ class PlatooningEnv(Env):
         )
 
     def reset(self):
+        # reset the number of cut-in vehicles
+        self.num_cut_in = 0
+
         # empty the acceleration queue
         self.accel_queue.clear()
 

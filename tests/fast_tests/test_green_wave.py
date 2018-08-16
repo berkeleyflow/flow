@@ -62,13 +62,17 @@ class TestUtils(unittest.TestCase):
         return edges
 
     def test_get_distance_to_intersection(self):
-        dists = self.env.get_distance_to_intersection(self.env.vehicles.get_ids())
+        veh_ids = self.env.vehicles.get_ids()
+        dists = self.env.get_distance_to_intersection(veh_ids)
 
-        # Obtain list of lists of vehicles on entrance edges, then the distances.
-        veh_ids = [self.env.vehicles.get_ids_by_edge(e) for e in self.gen_edges(1, 1)]
+        # Obtain list of lists of vehicles on entrance
+        # edges, then the distances.
+        veh_ids = [self.env.vehicles.get_ids_by_edge(e)
+                   for e in self.gen_edges(1, 1)]
         dists = [self.env.get_distance_to_intersection(v) for v in veh_ids]
-        short_length = self.env.scenario.net_params.additional_params['grid_array']['short_length']
-        
+        grid = self.env.scenario.net_params.additional_params['grid_array']
+        short_length = grid['short_length']
+
         # The first check asserts all the lists are equal. With the default
         # initial config (sans noise) it should be. The second check asserts
         # that all the vehicles are in the confines of [0, short_length] away
@@ -79,31 +83,33 @@ class TestUtils(unittest.TestCase):
                 self.assertLessEqual(d, short_length)
                 self.assertGreaterEqual(d, 0)
 
-        # Asserts that when a vehicles is in a junction, get_distance_to_intersection
-        # returns 0.
-        while not ['center' in edge for edge in self.env.vehicles.get_edge(self.env.vehicles.get_ids())]:
+        # Asserts that when a vehicles is in a junction,
+        # get_distance_to_intersection returns 0.
+        veh_edges = self.env.vehicles.get_edge(self.env.vehicles.get_ids())
+        while not ['center' in edge for edge in veh_edges]:
             print(self.env.vehicles.get_edge(self.env.vehicles.get_ids()))
-            self.env.step(rl_actions=[])    
-        junction_veh = list(filter(lambda x: 'center' in x, self.env.vehicles.get_ids()))
+            self.env.step(rl_actions=[])
+        junction_veh = list(filter(lambda x: 'center' in x,
+                                   self.env.vehicles.get_ids()))
         for veh_id in junction_veh:
             self.assertEqual(0, self.env.get_distance_to_intersection(veh_id))
 
     def test_sort_by_intersection_dist(self):
         self.env.reset()
         # Get the veh_ids by entrance edges.
-        veh_ids = [self.env.vehicles.get_ids_by_edge(e) for e in self.gen_edges(1, 1)]
+        veh_ids = [self.env.vehicles.get_ids_by_edge(e)
+                   for e in self.gen_edges(1, 1)]
 
-        # Each list in veh_ids is inherently sorted from 
-        # farthest to closest. We zip the lists together 
+        # Each list in veh_ids is inherently sorted from
+        # farthest to closest. We zip the lists together
         # to obtain the first 4 closeset, then second 4...
         dists = list(zip(*[v for v in veh_ids]))
         sort = self.env.sort_by_intersection_dist()
-        
+
         # Compare dists from farthest to closest.
         for i, veh_id in enumerate(sort[::-1]):
             self.assertTrue(veh_id in dists[i // 4])
-             
-        
+
     def tearDown(self):
         # terminate the traci instance
         self.env.terminate()
@@ -111,6 +117,7 @@ class TestUtils(unittest.TestCase):
         # free up used memory
         self.env = None
         self.exp = None
+
 
 if __name__ == '__main__':
     unittest.main()

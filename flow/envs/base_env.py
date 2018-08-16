@@ -10,6 +10,7 @@ import random
 
 import traci
 from traci import constants as tc
+from traci.exceptions import FatalTraCIError, TraCIException
 import gym
 from gym.spaces import Box
 
@@ -529,7 +530,7 @@ class Env(gym.Env, Serializable):
                 self.traci_connection.vehicle.remove(veh_id)
                 self.traci_connection.vehicle.unsubscribe(veh_id)
                 self.vehicles.remove(veh_id)
-            except Exception:
+            except (FatalTraCIError, TraCIException):
                 print("Error during start: {}".format(traceback.format_exc()))
                 pass
 
@@ -539,7 +540,7 @@ class Env(gym.Env, Serializable):
             self.vehicles.remove(veh_id)
             try:
                 self.traci_connection.vehicle.remove(veh_id)
-            except Exception:
+            except (FatalTraCIError, TraCIException):
                 print("Error during start: {}".format(traceback.format_exc()))
 
         # reintroduce the initial vehicles to the network
@@ -552,7 +553,7 @@ class Env(gym.Env, Serializable):
                     veh_id, route_id, typeID=str(type_id),
                     departLane=str(lane_index),
                     departPos=str(lane_pos), departSpeed=str(speed))
-            except:
+            except (FatalTraCIError, TraCIException):
                 # if a vehicle was not removed in the first attempt, remove it
                 # now and then reintroduce it
                 self.traci_connection.vehicle.remove(veh_id)
@@ -772,7 +773,7 @@ class Env(gym.Env, Serializable):
                 # color rl vehicles red
                 self.traci_connection.vehicle.setColor(vehID=veh_id,
                                                        color=(255, 0, 0, 255))
-            except:
+            except (FatalTraCIError, TraCIException):
                 pass
 
         for veh_id in self.vehicles.get_human_ids():
@@ -785,7 +786,7 @@ class Env(gym.Env, Serializable):
                     color = (255, 255, 255, 255)
                 self.traci_connection.vehicle.setColor(vehID=veh_id,
                                                        color=color)
-            except:
+            except (FatalTraCIError, TraCIException):
                 pass
 
         # clear the list of observed vehicles

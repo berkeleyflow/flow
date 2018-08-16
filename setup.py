@@ -2,7 +2,6 @@
 from os.path import dirname, realpath
 from setuptools import find_packages, setup, Distribution
 import setuptools.command.build_ext as _build_ext
-import subprocess
 
 
 def _read_requirements_file():
@@ -13,18 +12,7 @@ def _read_requirements_file():
 
 class build_ext(_build_ext.build_ext):
     def run(self):
-        try:
-            import tensorflow
-        except ImportError:
-            subprocess.check_call(['pip', 'install', 'tensorflow>=0.11.0'])
-
-        try:
-            import gym
-        except ImportError:
-            subprocess.check_call(
-                ['pip', 'install',
-                 'git+https://github.com/openai/gym.git@'
-                 '93d554bdbb4b2d29ff1a685158dbde93b36e3801#egg=gym'])
+        pass
 
 
 class BinaryDistribution(Distribution):

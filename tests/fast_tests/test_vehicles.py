@@ -318,7 +318,43 @@ class TestOutflowInfo(unittest.TestCase):
         self.exp = SumoExperiment(self.env, self.scenario)
 
         self.exp.run(1, 15)
+
+        # test outflow rate
         self.assertAlmostEqual(2*3600.0/15.0, vehicles.get_outflow_rate(100))
+
+        # test get num arrived
+
+        # test get initial speed
+
+        # test get speed
+
+        # test get position
+
+        # test get edge
+
+        # test get lane
+
+        # test get/set length
+
+        # test get_acc_controller
+
+        # test get_lane_changing_controller
+
+        # test get_routing_controller
+
+        # test get_route
+
+        # test get_leader
+
+        # test get_follower
+
+        # test get_lane_headways
+
+        # test get_lane_leaders
+
+        # test get_lane_tailways
+
+        # test get_lane_followers
 
 if __name__=='__main__':
     unittest.main()

@@ -430,7 +430,7 @@ class TestRandomStartPos(unittest.TestCase):
     Tests the function gen_random_start_pos in base_scenario.py.
     """
 
-    def setUp(self, initial_config=InitialConfig()):
+    def setUp_gen_start_pos(self, initial_config=InitialConfig()):
         # ensures that the random starting position method is being used
         initial_config.spacing = "random"
 

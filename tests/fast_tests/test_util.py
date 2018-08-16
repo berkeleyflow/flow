@@ -3,7 +3,7 @@ import csv
 import os
 
 from flow.core.util import emission_to_csv
-from flow.utils.warnings import deprecation_warning
+from flow.utils.flow_warnings import deprecation_warning
 
 os.environ["TEST_FLAG"] = "True"
 

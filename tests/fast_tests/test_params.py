@@ -9,7 +9,7 @@ class TestSumoCarFollowingParams(unittest.TestCase):
 
     """Tests flow.core.params.SumoCarFollowingParams"""
 
-    def runTest(self):
+    def test_params(self):
         """Tests that the various parameters lead to correct assignments in the
         controller_params attribute of the class."""
         # start a SumoCarFollowingParams with some attributes
@@ -71,7 +71,7 @@ class TestSumoLaneChangeParams(unittest.TestCase):
 
     """Tests flow.core.params.SumoLaneChangeParams"""
 
-    def runTest(self):
+    def test_lc_params(self):
         """Tests basic usage of the SumoLaneChangeParams object. Ensures that
         the controller_params attribute contains different elements depending
         on whether LC2103 or SL2015 is being used as the model."""

@@ -47,7 +47,7 @@ class TestStartingPositionShuffle(unittest.TestCase):
         # free data used by the class
         self.env = None
 
-    def runTest(self):
+    def test_starting_pos(self):
         ids = self.env.vehicles.get_ids()
 
         # position of vehicles before reset
@@ -101,7 +101,7 @@ class TestVehicleArrangementShuffle(unittest.TestCase):
         # free data used by the class
         self.env = None
 
-    def runTest(self):
+    def test_shuffle(self):
         ids = self.env.vehicles.get_ids()
 
         # position of vehicles before reset
@@ -136,7 +136,7 @@ class TestEmissionPath(unittest.TestCase):
         # free data used by the class
         self.env = None
 
-    def runTest(self):
+    def test_emission(self):
         self.assertIsNone(self.env.sumo_params.emission_path)
 
 

@@ -290,51 +290,6 @@ class TrafficLightGridEnv(Env):
         else:
             return 0
 
-    def additional_command(self):
-        """Used to insert vehicles that are on the exit edge and place them
-        back on their entrance edge."""
-        for veh_id in self.vehicles.get_ids():
-            self._reroute_if_final_edge(veh_id)
-
-    def _reroute_if_final_edge(self, veh_id):
-        """Checks if an edge is the final edge. If it is return the route it
-        should start off at."""
-        edge = self.vehicles.get_edge(veh_id)
-        if edge == "":
-            return
-        if edge[0] == ":":  # center edge
-            return
-        pattern = re.compile(r"[a-zA-Z]+")
-        edge_type = pattern.match(edge).group()
-        edge = edge.split(edge_type)[1].split('_')
-        row_index, col_index = [int(x) for x in edge]
-
-        # find the route that we're going to place the vehicle on if we are
-        # going to remove it
-        route_id = None
-        if edge_type == 'bot' and col_index == self.cols:
-            route_id = "bot{}_0".format(row_index)
-        elif edge_type == 'top' and col_index == 0:
-            route_id = "top{}_{}".format(row_index, self.cols)
-        elif edge_type == 'left' and row_index == 0:
-            route_id = "left{}_{}".format(self.rows, col_index)
-        elif edge_type == 'right' and row_index == self.rows:
-            route_id = "right0_{}".format(col_index)
-
-        if route_id is not None:
-            route_id = "route" + route_id
-            # remove the vehicle
-            self.traci_connection.vehicle.remove(veh_id)
-            # reintroduce it at the start of the network
-            type_id = self.vehicles.get_state(veh_id, "type")
-            lane_index = self.vehicles.get_lane(veh_id)
-            self.traci_connection.vehicle.addFull(
-                veh_id, route_id, typeID=str(type_id),
-                departLane=str(lane_index),
-                departPos="0", departSpeed="max")
-            speed_mode = self.vehicles.type_parameters[type_id]["speed_mode"]
-            self.traci_connection.vehicle.setSpeedMode(veh_id, speed_mode)
-
     def k_closest_to_intersection(self, edges, k):
         """
         Return the veh_id of the k closest vehicles to an intersection for

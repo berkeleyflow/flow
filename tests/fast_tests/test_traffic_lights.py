@@ -151,7 +151,7 @@ class TestPOEnv(unittest.TestCase):
         # free data used by the class
         self.env = None
 
-    def compare_ordering(self, ordering):
+    def test_compare_ordering(self, ordering):
         # take in a list like [[bot0_0, right0_0, top0_1, left1_0], [bot....]
         # print(ordering)
         for x in ordering:

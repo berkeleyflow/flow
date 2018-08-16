@@ -30,7 +30,7 @@ class TestGetX(unittest.TestCase):
         # free data used by the class
         self.scenario = None
 
-    def runTest(self):
+    def test_getx(self):
         # test for an edge in the lanes
         edge_1 = "bottom_lower_ring"
         pos_1 = 4.72
@@ -57,7 +57,7 @@ class TestGetEdge(unittest.TestCase):
         # free data used by the class
         self.scenario = None
 
-    def runTest(self):
+    def test_get_edge(self):
         # test for a position in the lanes
         x1 = 5
         self.assertTupleEqual(
@@ -396,7 +396,7 @@ class TestEvenStartPosInternalLinks(unittest.TestCase):
         # free data used by the class
         self.env = None
 
-    def runTest(self):
+    def test_even_start_pos_internal(self):
         # get the positions of all vehicles
         ids = self.env.vehicles.get_ids()
         veh_pos = np.array([self.env.get_x_by_id(veh_id) for veh_id in ids])
@@ -430,7 +430,7 @@ class TestRandomStartPos(unittest.TestCase):
     Tests the function gen_random_start_pos in base_scenario.py.
     """
 
-    def setUp_gen_start_pos(self, initial_config=InitialConfig()):
+    def setUp(self, initial_config=InitialConfig()):
         # ensures that the random starting position method is being used
         initial_config.spacing = "random"
 
@@ -451,7 +451,7 @@ class TestRandomStartPos(unittest.TestCase):
                                                  initial_config=initial_config,
                                                  vehicles=vehicles)
 
-    def tearDown_gen_start_pos(self):
+    def tearDown(self):
         # terminate the traci instance
         self.env.terminate()
 
@@ -515,7 +515,7 @@ class TestEvenStartPosVariableLanes(unittest.TestCase):
         # free data used by the class
         self.env = None
 
-    def runTest(self):
+    def test_even_start_pos_coverage(self):
         """
         Ensures that enough vehicles are placed in the network, and they cover
         all possible lanes.
@@ -666,7 +666,7 @@ class TestGetEdgeList(unittest.TestCase):
         # free data used by the class
         self.scenario = None
 
-    def runTest(self):
+    def test_get_edge_list(self):
         edge_list = self.scenario.get_edge_list()
         expected_edge_list = ["bottom_lower_ring", "right_lower_ring_in",
                               "right_lower_ring_out", "left_upper_ring",
@@ -691,7 +691,7 @@ class TestGetJunctionList(unittest.TestCase):
         # free data used by the class
         self.scenario = None
 
-    def runTest(self):
+    def test_get_junction_list(self):
         junction_list = self.scenario.get_junction_list()
         expected_junction_list = \
             [':right_upper_ring_0', ':right_lower_ring_in_0',

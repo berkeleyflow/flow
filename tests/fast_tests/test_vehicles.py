@@ -3,13 +3,16 @@ import os
 import numpy as np
 
 from flow.core.vehicles import Vehicles
-from flow.core.params import SumoCarFollowingParams, NetParams, InitialConfig
+from flow.core.params import SumoCarFollowingParams, NetParams, InitialConfig \
+    , SumoParams, InFlows
 from flow.controllers.car_following_models import IDMController, \
     SumoCarFollowingController
 from flow.controllers.lane_change_controllers import StaticLaneChanger
 from flow.controllers.rlcontroller import RLController
+from flow.core.experiment import SumoExperiment
+from flow.controllers.routing_controllers import GridRouter
+from tests.setup_scripts import ring_road_exp_setup, grid_mxn_exp_setup
 
-from tests.setup_scripts import ring_road_exp_setup
 
 os.environ["TEST_FLAG"] = "True"
 
@@ -232,17 +235,17 @@ class TestIdsByEdge(unittest.TestCase):
         self.env.terminate()
         self.env = None
 
-    def runTest(self):
+    def test_ids_by_edge(self):
         self.env.reset()
         ids = self.env.vehicles.get_ids_by_edge("bottom")
         expected_ids = ["test_0", "test_1", "test_2", "test_3", "test_4"]
-        self.assertCountEqual(ids, expected_ids)
+        self.assertListEqual(sorted(ids), sorted(expected_ids))
 
 
 class TestObservedIDs(unittest.TestCase):
     """Tests the observed_ids methods, which are used for visualization."""
 
-    def run_test(self):
+    def test_obs_ids(self):
         vehicles = Vehicles()
         vehicles.add(veh_id="test", num_vehicles=10)
 
@@ -261,13 +264,61 @@ class TestObservedIDs(unittest.TestCase):
 
         # test removing observed values
         vehicles.remove_observed("test_0")
-        self.assertCountEqual(vehicles.get_observed_ids(), ["test_1"])
+        self.assertListEqual(vehicles.get_observed_ids(), ["test_1"])
 
         # ensures that removing a value that does not exist does not lead to
         # an error
         vehicles.remove_observed("test_0")
         self.assertCountEqual(vehicles.get_observed_ids(), ["test_1"])
 
+class TestOutflowInfo(unittest.TestCase):
+    """Tests that the out methods return the correct values"""
+    def test_inflows(self):
+        vehicles = Vehicles()
+        self.assertEqual(0, vehicles.get_outflow_rate(10000),
+                         "outflow should be zero when there are no vehicles")
 
-if __name__ == '__main__':
+        # now construct a scenario where a vehicles is going to leave
+        # create the environment and scenario classes for a 1x1 grid
+
+        sumo_params = SumoParams(sim_step=1, sumo_binary="sumo")
+        total_vehicles = 4
+        vehicles = Vehicles()
+        vehicles.add(veh_id="krauss",
+                     acceleration_controller=(RLController, {}),
+                     routing_controller=(GridRouter, {}),
+                     num_vehicles=total_vehicles,
+                     speed_mode="all_checks")
+        grid_array = {"short_length": 30, "inner_length": 30,
+                      "long_length": 30, "row_num": 1,
+                      "col_num": 1,
+                      "cars_left": 1,
+                      "cars_right": 1,
+                      "cars_top": 1,
+                      "cars_bot": 1}
+
+        additional_net_params = {"speed_limit": 35, "grid_array": grid_array,
+                                 "horizontal_lanes": 1, "vertical_lanes": 1}
+
+        net_params = NetParams(no_internal_links=False,
+                               additional_params=additional_net_params)
+
+        self.env, self.scenario = grid_mxn_exp_setup(row_num=1, col_num=1,
+                                                     sumo_params=sumo_params,
+                                                     vehicles=vehicles,
+                                                     net_params=net_params)
+
+        # go through the env and set all the lights to green
+        for i in range(self.env.rows * self.env.cols):
+            self.env.traci_connection.trafficlight.setRedYellowGreenState(
+                'center' + str(i), "gggrrrgggrrr")
+
+
+        # instantiate an experiment class
+        self.exp = SumoExperiment(self.env, self.scenario)
+
+        self.exp.run(1, 15)
+        self.assertAlmostEqual(2*3600.0/15.0, vehicles.get_outflow_rate(100))
+
+if __name__=='__main__':
     unittest.main()

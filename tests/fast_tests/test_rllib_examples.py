@@ -40,11 +40,6 @@ class TestRllibBenchmarks(unittest.TestCase):
         config["clip_param"] = 0.2
         config["sgd_batchsize"] = horizon
 
-        # save the flow params for replay
-        flow_json = json.dumps(flow_params, cls=FlowParamsEncoder, sort_keys=True,
-                               indent=4)
-        config['env_config']['flow_params'] = flow_json
-
         # Register as rllib env
         register_env(env_name, create_env)
 

@@ -71,7 +71,7 @@ class TestSumoLaneChangeParams(unittest.TestCase):
 
     """Tests flow.core.params.SumoLaneChangeParams"""
 
-    def runTest(self):
+    def test_lc_params_usage(self):
         """Tests basic usage of the SumoLaneChangeParams object. Ensures that
         the controller_params attribute contains different elements depending
         on whether LC2103 or SL2015 is being used as the model."""

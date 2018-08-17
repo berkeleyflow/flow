@@ -553,7 +553,7 @@ class Env(gym.Env, Serializable):
                     veh_id, route_id, typeID=str(type_id),
                     departLane=str(lane_index),
                     departPos=str(lane_pos), departSpeed=str(speed))
-            except:
+            except Exception:
                 # if a vehicle was not removed in the first attempt, remove it
                 # now and then reintroduce it
                 self.traci_connection.vehicle.remove(veh_id)
@@ -773,7 +773,7 @@ class Env(gym.Env, Serializable):
                 # color rl vehicles red
                 self.traci_connection.vehicle.setColor(vehID=veh_id,
                                                        color=(255, 0, 0, 255))
-            except:
+            except Exception:
                 pass
 
         for veh_id in self.vehicles.get_human_ids():
@@ -786,7 +786,7 @@ class Env(gym.Env, Serializable):
                     color = (255, 255, 255, 255)
                 self.traci_connection.vehicle.setColor(vehID=veh_id,
                                                        color=color)
-            except:
+            except Exception:
                 pass
 
         # clear the list of observed vehicles

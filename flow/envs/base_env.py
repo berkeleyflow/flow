@@ -539,6 +539,7 @@ class Env(gym.Env, Serializable):
             self.vehicles.remove(veh_id)
             try:
                 self.traci_connection.vehicle.remove(veh_id)
+                self.traci_connection.vehicle.unsubscribe(veh_id)
             except Exception:
                 print("Error during start: {}".format(traceback.format_exc()))
 

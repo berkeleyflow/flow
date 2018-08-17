@@ -541,6 +541,7 @@ class Env(gym.Env, Serializable):
             try:
                 self.traci_connection.vehicle.remove(veh_id)
             except (FatalTraCIError, TraCIException):
+                self.traci_connection.vehicle.unsubscribe(veh_id)
                 print("Error during start: {}".format(traceback.format_exc()))
 
         # reintroduce the initial vehicles to the network

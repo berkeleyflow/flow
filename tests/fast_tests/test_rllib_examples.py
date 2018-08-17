@@ -14,14 +14,13 @@ from flow.utils.rllib import FlowParamsEncoder
 
 # use this to specify the environment to run
 
-# number of rollouts per training iteration
-N_ROLLOUTS = 2
-# number of parallel workers
-PARALLEL_ROLLOUTS = 2
-
 class TestRllibBenchmarks(unittest.TestCase):
     """Test that the benchmarks run"""
     def test_grid(self):
+        # Number of parallel workers
+        PARALLEL_ROLLOUTS = 2
+        # number of rollouts per training iteration
+        N_ROLLOUTS = 2
         from flow.benchmarks.grid0 import flow_params
         # get the env name and a creator for the environment
         create_env, env_name = make_create_env(params=flow_params, version=0)

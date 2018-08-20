@@ -1,8 +1,7 @@
 language: python
+
 python:
   - "3.5"
-script:
-    - nose2
 
 sudo: required
 
@@ -75,3 +74,11 @@ before_install:
 
   - ls ../
 
+install:
+  - pip install flake8 .
+
+before_script:
+  - flake8 --show-source
+
+script:
+  - nose2

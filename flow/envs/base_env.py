@@ -10,6 +10,7 @@ import random
 
 import traci
 from traci import constants as tc
+from traci.exceptions import FatalTraCIError, TraCIException
 import gym
 from gym.spaces import Box
 
@@ -185,7 +186,8 @@ class Env(gym.Env, Serializable):
                     if os.environ.get("TEST_FLAG", 0):
                         # backoff to decrease likelihood of race condition
                         time_stamp = ''.join(str(time.time()).split('.'))
-                        time.sleep(1.0 * int(time_stamp[-6:]) / 1e6)  # 1.0 for consistency w/ above
+                        # 1.0 for consistency w/ above
+                        time.sleep(1.0 * int(time_stamp[-6:]) / 1e6)
                         port = sumolib.miscutils.getFreeSocketPort()
 
                 # command used to start sumo
@@ -538,7 +540,7 @@ class Env(gym.Env, Serializable):
                 self.traci_connection.vehicle.remove(veh_id)
                 self.traci_connection.vehicle.unsubscribe(veh_id)
                 self.vehicles.remove(veh_id)
-            except Exception:
+            except (FatalTraCIError, TraCIException):
                 print("Error during start: {}".format(traceback.format_exc()))
                 pass
 
@@ -548,7 +550,8 @@ class Env(gym.Env, Serializable):
             self.vehicles.remove(veh_id)
             try:
                 self.traci_connection.vehicle.remove(veh_id)
-            except Exception:
+                self.traci_connection.vehicle.unsubscribe(veh_id)
+            except (FatalTraCIError, TraCIException):
                 print("Error during start: {}".format(traceback.format_exc()))
 
         # reintroduce the initial vehicles to the network
@@ -561,7 +564,7 @@ class Env(gym.Env, Serializable):
                     veh_id, route_id, typeID=str(type_id),
                     departLane=str(lane_index),
                     departPos=str(lane_pos), departSpeed=str(speed))
-            except:
+            except (FatalTraCIError, TraCIException):
                 # if a vehicle was not removed in the first attempt, remove it
                 # now and then reintroduce it
                 self.traci_connection.vehicle.remove(veh_id)
@@ -606,7 +609,7 @@ class Env(gym.Env, Serializable):
 
         # perform (optional) warm-up steps before training
         for _ in range(self.env_params.warmup_steps):
-            observation, _, _, _ = self.step(rl_actions=[])
+            observation, _, _, _ = self.step(rl_actions=None)
 
         return observation
 
@@ -614,7 +617,7 @@ class Env(gym.Env, Serializable):
         """Additional commands that may be performed by the step method."""
         pass
 
-    def apply_rl_actions(self, rl_actions=list()):
+    def apply_rl_actions(self, rl_actions=None):
         """Specifies the actions to be performed by the rl agent(s).
 
         If no actions are provided at any given step, the rl agents default to
@@ -626,7 +629,7 @@ class Env(gym.Env, Serializable):
             list of actions provided by the RL algorithm
         """
         # ignore if no actions are issued
-        if len(rl_actions) == 0:
+        if rl_actions is None:
             return
 
         # clip according to the action space requirements
@@ -781,7 +784,7 @@ class Env(gym.Env, Serializable):
                 # color rl vehicles red
                 self.traci_connection.vehicle.setColor(vehID=veh_id,
                                                        color=(255, 0, 0, 255))
-            except:
+            except (FatalTraCIError, TraCIException):
                 pass
 
         for veh_id in self.vehicles.get_human_ids():
@@ -794,7 +797,7 @@ class Env(gym.Env, Serializable):
                     color = (255, 255, 255, 255)
                 self.traci_connection.vehicle.setColor(vehID=veh_id,
                                                        color=color)
-            except:
+            except (FatalTraCIError, TraCIException):
                 pass
 
         # clear the list of observed vehicles

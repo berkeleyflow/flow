@@ -301,7 +301,7 @@ class TestWaveAttenuationEnv(unittest.TestCase):
         eta = 8  # 0.25
         rl_actions = np.array([1])
         accel_threshold = 0
-        np.tanh(np.mean(np.abs(rl_actions)))
+
         if np.mean(np.abs(rl_actions)) > accel_threshold:
             reward += eta * (accel_threshold - np.mean(np.abs(rl_actions)))
         expected_rew = float(reward)

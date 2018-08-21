@@ -126,8 +126,7 @@ class Env(gym.Env, Serializable):
 
         # list of sorted ids (defaults to regular list of vehicle ids if the
         # "sort_vehicles" attribute in env_params is set to False)
-        self.sorted_ids = deepcopy(self.vehicles.get_ids())
-        self.sorted_extra_data = None
+        self.sorted_ids, self.sorted_extra_data = self.sort_by_position()
 
         # keeps track of the last time a lane change occurred before the
         # current time step. This is meant to ensure that lane changes by RL

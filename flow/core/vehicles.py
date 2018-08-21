@@ -277,7 +277,6 @@ class Vehicles:
         env: Environment type
             state of the environment at the current time step
         """
-
         # remove exiting vehicles from the vehicles class
         for veh_id in sim_obs[tc.VAR_ARRIVED_VEHICLES_IDS]:
             if veh_id not in sim_obs[tc.VAR_TELEPORT_STARTING_VEHICLES_IDS]:
@@ -422,7 +421,7 @@ class Vehicles:
             if lc_controller[0] != SumoLaneChangeController:
                 self.__controlled_lc_ids.append(veh_id)
 
-        # subscribe the new vehicle
+        # subscribe the new vehicle (if it is not already there)
         env.traci_connection.vehicle.subscribe(
             veh_id, [tc.VAR_LANE_INDEX, tc.VAR_LANEPOSITION,
                      tc.VAR_ROAD_ID, tc.VAR_SPEED, tc.VAR_EDGES])

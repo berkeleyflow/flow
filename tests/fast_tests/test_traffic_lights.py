@@ -301,11 +301,12 @@ class TestCustomization(unittest.TestCase):
         # Reset the environment
         self.env.reset()
 
-        # Calculate multiplier, because phases are in seconds 
+        # Calculate multiplier, because phases are in seconds
         sim_multiplier = int(1 / self.env.sumo_params.sim_step)
 
         # Check that the phases occur for the correct amount of time
-        for i in range(self.green * sim_multiplier - 1): # This is because env.reset() takes 1 step
+        for i in range(self.green * sim_multiplier - 1):
+            # This is because env.reset() takes 1 step
             self.assertEqual(self.env.traffic_lights.get_state("top"), "G")
             self.env.step([])
         for i in range(self.yellow * sim_multiplier):
@@ -315,16 +316,15 @@ class TestCustomization(unittest.TestCase):
             self.assertEqual(self.env.traffic_lights.get_state("top"), "r")
             self.env.step([])
         for i in range(3):
-            for i in range(self.green * sim_multiplier):
+            for _ in range(self.green * sim_multiplier):
                 self.assertEqual(self.env.traffic_lights.get_state("top"), "G")
                 self.env.step([])
-            for i in range(self.yellow * sim_multiplier):
+            for _ in range(self.yellow * sim_multiplier):
                 self.assertEqual(self.env.traffic_lights.get_state("top"), "y")
                 self.env.step([])
-            for i in range(self.red * sim_multiplier):
+            for _ in range(self.red * sim_multiplier):
                 self.assertEqual(self.env.traffic_lights.get_state("top"), "r")
                 self.env.step([])
-
 
 
 if __name__ == '__main__':

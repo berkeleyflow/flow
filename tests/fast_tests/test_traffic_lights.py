@@ -208,19 +208,16 @@ class TestItRuns(unittest.TestCase):
                          min_gap=2.5, tau=1.1),
                      num_vehicles=16)
 
-        self.env, self.scenario = grid_mxn_exp_setup(row_num=1, col_num=3,
-                                                     vehicles=vehicles)
+        env, scenario = grid_mxn_exp_setup(row_num=1, col_num=3,
+                                           vehicles=vehicles)
+
+        self.exp = SumoExperiment(env, scenario)
 
     def tearDown(self):
-        # terminate the traci instance
-        self.env.terminate()
-
         # free data used by the class
-        self.env = None
-        self.scenario = None
+        self.exp = None
 
     def test_it_runs(self):
-        self.exp = SumoExperiment(self.env, self.scenario)
         self.exp.run(5, 50)
 
 
@@ -249,19 +246,16 @@ class TestIndividualLights(unittest.TestCase):
                      showDetectors=True,
                      file="testindividuallights.xml", freq=100)
 
-        self.env, self.scenario = grid_mxn_exp_setup(row_num=1, col_num=4,
-                                                     tl_logic=tl_logic)
+        env, scenario = grid_mxn_exp_setup(row_num=1, col_num=4,
+                                           tl_logic=tl_logic)
+
+        self.exp = SumoExperiment(env, scenario)
 
     def tearDown(self):
-        # terminate the traci instance
-        self.env.terminate()
-
         # free data used by the class
-        self.env = None
-        self.scenario = None
+        self.exp = None
 
     def test_it_runs(self):
-        self.exp = SumoExperiment(self.env, self.scenario)
         self.exp.run(5, 50)
 
 

@@ -2,6 +2,8 @@
 [![Docs](https://readthedocs.org/projects/berkeleyflow/badge)](http://berkeleyflow.readthedocs.org/en/latest/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/berkeleyflow/flow/blob/master/LICENSE.md)
 
+## This repository has been moved to the flow-project organization. Please fork github.com/flow-project/flow!
+
 # Flow
 
 [Flow](https://berkeleyflow.github.io) is a computational framework for deep RL and control experiments for traffic microsimulation.

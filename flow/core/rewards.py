@@ -14,7 +14,8 @@ def desired_velocity(env, fail=False):
     are set to this desired velocity. Moreover, in order to ensure that the
     reward function naturally punishing the early termination of rollouts due
     to collisions or other failures, the function is formulated as a mapping
-    :math:`r: \\mathcal{S} \\times \\mathcal{A} \\rightarrow \\mathbb{R}_{\\geq 0}`.
+    :math:`r: \\mathcal{S} \\times \\mathcal{A}
+    \\rightarrow \\mathbb{R}_{\\geq 0}`.
     This is done by subtracting the deviation of the system from the
     desired velocity from the peak allowable deviation from the desired
     velocity. Additionally, since the velocity of vehicles are
@@ -35,11 +36,11 @@ def desired_velocity(env, fail=False):
     if any(vel < -100) or fail:
         return 0.
 
-    max_cost = np.array([env.env_params.additional_params["target_velocity"]] *
-                        num_vehicles)
+    target_vel = env.env_params.additional_params["target_velocity"]
+    max_cost = np.array([target_vel] * num_vehicles)
     max_cost = np.linalg.norm(max_cost)
 
-    cost = vel - env.env_params.additional_params["target_velocity"]
+    cost = vel - target_vel
     cost = np.linalg.norm(cost)
 
     return max(max_cost - cost, 0) / max_cost
@@ -69,11 +70,11 @@ def max_edge_velocity(env, edge_list, fail=False):
     if any(vel < -100) or fail:
         return 0.
 
-    max_cost = np.array([env.env_params.additional_params["target_velocity"]] *
-                        num_vehicles)
+    target_vel = env.env_params.additional_params["target_velocity"]
+    max_cost = np.array([target_vel] * num_vehicles)
     max_cost = np.linalg.norm(max_cost)
 
-    cost = vel - env.env_params.additional_params["target_velocity"]
+    cost = vel - target_vel
     cost = np.linalg.norm(cost)
 
     return max(max_cost - cost, 0)
